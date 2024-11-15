@@ -83,5 +83,6 @@ fn main() {
     battle.add_bot(wasm_bytes_2);
 
     println!("battle!");
-    battle.execute();
+    let winner = battle.execute();
+    println!("winner: {winner}");
 }

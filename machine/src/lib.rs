@@ -54,8 +54,12 @@ struct BotModule {
     instance: Instance,
     store: Store,
     init: TypedFunction<u32, ()>,
-    update: TypedFunction<(u32, u32), u32>,
+    compute_actions: TypedFunction<(u32, u32, u32, u32, u32, u32), u32>,
 }
+
+const INIT_GAS: u64 = 1_000;
+const COMPUTE_ACTIONS_GAS: u64 = 1_000_000;
+const MAX_NUM_UPDATES: u64 = 1_000_000;
 
 fn create_bot_module(wasm_bytes: &mut [u8]) -> BotModule {
     #[cfg(not(target_arch = "wasm32"))]
@@ -134,17 +138,17 @@ fn create_bot_module(wasm_bytes: &mut [u8]) -> BotModule {
         .typed(&mut store)
         .expect("failed to get typed version of the function 'init'");
 
-    let update: TypedFunction<(u32, u32), u32> = instance
+    let compute_actions: TypedFunction<(u32, u32, u32, u32, u32, u32), u32> = instance
         .exports
-        .get_function("update")
-        .expect("failed to get function 'update'")
+        .get_function("compute_actions")
+        .expect("failed to get function 'compute_actions'")
         .typed(&mut store)
-        .expect("failed to get typed version of the function 'update'");
+        .expect("failed to get typed version of the function 'compute_actions'");
 
     BotModule {
         instance,
         store,
-        update,
+        compute_actions,
         init,
     }
 }
@@ -207,8 +211,24 @@ impl BotModule {
         }
     }
 
-    fn update(&mut self, my_units: u32, enemy_units: u32) -> () {
-        match self.update.call(&mut self.store, my_units, enemy_units) {
+    fn compute_actions(
+        &mut self,
+        self_x: u32,
+        self_y: u32,
+        ball_x: u32,
+        ball_y: u32,
+        enemy_x: u32,
+        enemy_y: u32,
+    ) -> () {
+        match self.compute_actions.call(
+            &mut self.store,
+            self_x,
+            self_y,
+            ball_x,
+            ball_y,
+            enemy_x,
+            enemy_y,
+        ) {
             Ok(_) => {
                 #[cfg(not(target_arch = "wasm32"))]
                 {
@@ -243,15 +263,15 @@ impl BotModule {
         }
     }
 
-    fn get_remaining_points(&mut self) -> MeteringPoints {
-        #[cfg(not(target_arch = "wasm32"))]
-        let points = get_remaining_points(&mut self.store, &self.instance);
+    // fn get_remaining_points(&mut self) -> MeteringPoints {
+    //     #[cfg(not(target_arch = "wasm32"))]
+    //     let points = get_remaining_points(&mut self.store, &self.instance);
 
-        #[cfg(target_arch = "wasm32")]
-        let points = MeteringPoints::Remaining(0);
+    //     #[cfg(target_arch = "wasm32")]
+    //     let points = MeteringPoints::Remaining(0);
 
-        points
-    }
+    //     points
+    // }
 
     #[allow(unused_variables)]
     fn set_remaining_points(&mut self, points: u64) {
@@ -287,32 +307,29 @@ impl Battle {
         }
     }
 
-    pub fn execute(&mut self) -> u8 {
+    pub fn init(&mut self) {
         let bot1 = self.bot1.as_mut().unwrap();
-        let _bot2 = self.bot2.as_mut().unwrap();
+        let bot2 = self.bot2.as_mut().unwrap();
 
-        bot1.set_remaining_points(1000000);
+        bot1.set_remaining_points(INIT_GAS);
+        bot2.set_remaining_points(INIT_GAS);
 
         println!("Calling `init` ...");
         bot1.init(0);
-        println!("Calling `update` ...");
-        bot1.update(3, 1);
+        bot2.init(0);
+    }
 
-        println!("Calling `update` again....");
-        bot1.update(0, 4);
+    fn update(&mut self) -> u8 {
+        let bot1 = self.bot1.as_mut().unwrap();
+        let bot2 = self.bot2.as_mut().unwrap();
 
-        println!("Calling `update` again(bis)...");
-        bot1.update(3, 5);
+        bot1.set_remaining_points(COMPUTE_ACTIONS_GAS);
+        bot2.set_remaining_points(COMPUTE_ACTIONS_GAS);
 
-        // Now let's see how we can set a new limit...
-        println!("Set new remaining points to 10");
-        let new_limit = 10;
-        bot1.set_remaining_points(new_limit);
-
-        let remaining_points = bot1.get_remaining_points();
-        // assert_eq!(remaining_points, MeteringPoints::Remaining(new_limit));
-
-        println!("Remaining points: {:?}", remaining_points);
+        println!("Calling `compute_actions` ...");
+        // TODO
+        bot1.compute_actions(0, 0, 0, 0, 0, 0);
+        bot2.compute_actions(0, 0, 0, 0, 0, 0);
 
         let mut rigid_body_set = RigidBodySet::new();
         let mut collider_set = ColliderSet::new();
@@ -365,6 +382,29 @@ impl Battle {
             println!("Ball altitude: {}", ball_body.translation().y);
         }
 
-        3
+        // TODO ball in camp
+        0
+    }
+
+    pub fn execute(&mut self) -> u8 {
+        println!("battle!");
+        let mut counter = 0;
+        let mut winner;
+        loop {
+            winner = self.update();
+            if winner != 0 {
+                // TODO winner
+                println!("WINNER: {winner}");
+                break;
+            } else {
+                counter = counter + 1;
+                if counter > MAX_NUM_UPDATES {
+                    // TODO draw
+                    println!("DRAW: {counter} updates executed.");
+                    break;
+                }
+            }
+        }
+        winner
     }
 }
