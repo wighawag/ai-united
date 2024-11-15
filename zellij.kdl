@@ -1,11 +1,5 @@
 layout {
 	pane {
-		pane split_direction="vertical" {
-			pane name="shell" command="bash" {
-				args "-c" "${SHELL-bash}"
-			}
-			
-		}
 
 		pane split_direction="vertical" {
 			
@@ -31,12 +25,27 @@ layout {
 
 		}
 
-		panbe split_direction="vertical" {
+		pane split_direction="vertical" {
 			pane name="wasm2hex" command="bash" {
 				args "-c" "cd wasm2hex; ${SHELL-bash}"
 			}
 			pane name="wasm2hex" command="bash" {
 				args "-c" "cd wasm2hex; cargo watch -c -w src -x build; ${SHELL-bash}"
+			}
+		}
+
+		pane split_direction="vertical" {
+			pane name="modules/rust" command="bash" {
+				args "-c" "cd modules/rust; cargo watch -c -w src -x 'build --release'; ${SHELL-bash}"
+			}
+		}
+
+		pane split_direction="vertical" {
+			pane name="machine-executor" command="bash" {
+				args "-c" "cd machine-executor; ${SHELL-bash}"
+			}
+			pane name="machine-executor" command="bash" {
+				args "-c" "cd machine-executor; cargo watch -c -w src -x build; ${SHELL-bash}"
 			}
 		}
 	}
