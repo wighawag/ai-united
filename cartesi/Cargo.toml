@@ -1,0 +1,12 @@
+[package]
+name = "dapp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+json = "0.12"
+hex = { version = "0.4.3" }
+lz4_flex = { version = "0.11" }
+hyper = { version = "0.14", features = ["http1", "runtime", "client"] }
+tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+machine = { path = "../machine" }

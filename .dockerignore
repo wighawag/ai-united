@@ -1,0 +1,8 @@
+.cartesi
+**/target
+**/node_modules
+*/
+!cartesi
+cartesi/target
+!machine
+machine/target
