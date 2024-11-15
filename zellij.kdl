@@ -35,8 +35,8 @@ layout {
 		}
 
 		pane split_direction="vertical" {
-			pane name="modules/rust" command="bash" {
-				args "-c" "cd modules/rust; cargo watch -c -w src -x 'build --release'; ${SHELL-bash}"
+			pane name="bots/rust" command="bash" {
+				args "-c" "cd bots/rust; cargo watch -c -w src -x 'build --release'; ${SHELL-bash}"
 			}
 		}
 

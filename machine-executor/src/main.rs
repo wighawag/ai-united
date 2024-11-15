@@ -3,7 +3,7 @@ use std::slice;
 
 use clap::Parser;
 use lz4_flex::decompress;
-use machine::Executor;
+use machine::Battle;
 
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -19,13 +19,13 @@ struct WasmData {
 struct Cli {
     /// Input file to compress and convert
     #[arg(short, long)]
-    module: String,
+    bot: String,
 }
 
 fn main() {
     let cli = Cli::parse();
 
-    let payload: &str = &cli.module.as_str();
+    let payload: &str = &cli.bot.as_str();
 
     println!("payload: {}", payload);
 
@@ -76,12 +76,12 @@ fn main() {
     };
     let wasm_bytes_2: &mut [u8] = &mut wasm_bytes_2; //cast to `&mut [u8]`
 
-    let mut executor = Executor::new();
-    println!("addding module 1 ...");
-    executor.add_module(wasm_bytes_1);
-    println!("addding module 2 ...");
-    executor.add_module(wasm_bytes_2);
+    let mut battle = Battle::new();
+    println!("addding bot 1 ...");
+    battle.add_bot(wasm_bytes_1);
+    println!("addding bot 2 ...");
+    battle.add_bot(wasm_bytes_2);
 
     println!("execute!");
-    executor.execute();
+    battle.execute();
 }

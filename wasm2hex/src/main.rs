@@ -6,7 +6,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize)]
-struct WasmModule {
+struct BotWasmData {
     wasm: String,
     uncompressed: String,
 }
@@ -47,18 +47,18 @@ fn main() {
     // let compressed_data = encoder.finish()?;
     let compressed_data = compress(&input_data);
 
-    let module = {
+    let bot_module = {
         // Convert compressed data to hex string
         let mut hex_string = hex::encode(&compressed_data);
         hex_string.insert_str(0, "0x");
-        WasmModule {
+        BotWasmData {
             wasm: hex_string,
             uncompressed: uncompressed_hex,
         }
     };
 
     // Serialize it to a JSON string.
-    let json = serde_json::to_string(&module).expect("failed to serialize");
+    let json = serde_json::to_string(&bot_module).expect("failed to serialize");
 
     // Write hex string to output file
     let mut output_file = File::create(&cli.output).expect("failed to create file");
@@ -67,5 +67,5 @@ fn main() {
         .expect("faile dto write file");
 
     println!("File compressed and converted to hex successfully!");
-    println!("{}", module.wasm);
+    println!("{}", bot_module.wasm);
 }

@@ -9,9 +9,9 @@ async function setup() {
 
   const wasm_bytes = fromHexString(wasm_bytes_as_hex);
   const executor = new Executor();
-  executor.add_module(wasm_bytes);
-  executor.add_module(wasm_bytes);
-  const result = executor.execute();
+  executor.add_bot(wasm_bytes);
+  executor.add_bot(wasm_bytes);
+  const result = executor.battle();
   console.log(result);
 }
 

@@ -47,7 +47,7 @@ pub fn start() -> Result<(), JsValue> {
     Ok(())
 }
 
-struct WasmModule {
+struct BotModule {
     #[allow(dead_code)]
     instance: Instance,
     store: Store,
@@ -55,7 +55,7 @@ struct WasmModule {
     update: TypedFunction<(u32, u32), u32>,
 }
 
-fn create_wasm_module(wasm_bytes: &mut [u8]) -> WasmModule {
+fn create_bot_module(wasm_bytes: &mut [u8]) -> BotModule {
     #[cfg(not(target_arch = "wasm32"))]
     let mut store = {
         // Let's define our cost function.
@@ -91,7 +91,7 @@ fn create_wasm_module(wasm_bytes: &mut [u8]) -> WasmModule {
     #[cfg(target_arch = "wasm32")]
     let mut store = { Store::default() };
 
-    println!("Compiling module...");
+    println!("Compiling wasm module...");
     // Let's compile the Wasm module.
     let module = Module::new(&store, wasm_bytes).expect("failed to create module");
 
@@ -116,7 +116,7 @@ fn create_wasm_module(wasm_bytes: &mut [u8]) -> WasmModule {
         },
     };
 
-    println!("Instantiating module...");
+    println!("Instantiating wasm module...");
     // Let's instantiate the Wasm module.
     let instance =
         Instance::new(&mut store, &module, &import_object).expect("failed to instantiate module");
@@ -139,7 +139,7 @@ fn create_wasm_module(wasm_bytes: &mut [u8]) -> WasmModule {
         .typed(&mut store)
         .expect("failed to get typed version of the function 'update'");
 
-    WasmModule {
+    BotModule {
         instance,
         store,
         update,
@@ -172,7 +172,7 @@ fn on_runtime_error(e: RuntimeError) {
     }
 }
 
-impl WasmModule {
+impl BotModule {
     fn init(&mut self, seed: u32) -> () {
         match self.init.call(&mut self.store, seed) {
             Ok(_) => {
@@ -259,55 +259,55 @@ impl WasmModule {
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
-pub struct Executor {
-    module1: Option<WasmModule>,
-    module2: Option<WasmModule>,
+pub struct Battle {
+    bot1: Option<BotModule>,
+    bot2: Option<BotModule>,
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
-impl Executor {
+impl Battle {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen(constructor))]
-    pub fn new() -> Executor {
-        Executor {
-            module1: None,
-            module2: None,
+    pub fn new() -> Battle {
+        Battle {
+            bot1: None,
+            bot2: None,
         }
     }
-    pub fn add_module(&mut self, wasm_bytes: &mut [u8]) {
-        if let Some(_existing_module) = &self.module1 {
-            if let Some(_existing_module) = &self.module2 {
-                panic!("already both modules added");
+    pub fn add_bot(&mut self, wasm_bytes: &mut [u8]) {
+        if let Some(_existing_bot) = &self.bot1 {
+            if let Some(_existing_bot) = &self.bot2 {
+                panic!("already both bots added");
             } else {
-                self.module2 = Some(create_wasm_module(wasm_bytes));
+                self.bot2 = Some(create_bot_module(wasm_bytes));
             }
         } else {
-            self.module1 = Some(create_wasm_module(wasm_bytes));
+            self.bot1 = Some(create_bot_module(wasm_bytes));
         }
     }
 
     pub fn execute(&mut self) -> u8 {
-        let module1 = self.module1.as_mut().unwrap();
-        let _module2 = self.module2.as_mut().unwrap();
+        let bot1 = self.bot1.as_mut().unwrap();
+        let _bot2 = self.bot2.as_mut().unwrap();
 
-        module1.set_remaining_points(1000000);
+        bot1.set_remaining_points(1000000);
 
         println!("Calling `init` ...");
-        module1.init(0);
+        bot1.init(0);
         println!("Calling `update` ...");
-        module1.update(3, 1);
+        bot1.update(3, 1);
 
         println!("Calling `update` again....");
-        module1.update(0, 4);
+        bot1.update(0, 4);
 
         println!("Calling `update` again(bis)...");
-        module1.update(3, 5);
+        bot1.update(3, 5);
 
         // Now let's see how we can set a new limit...
         println!("Set new remaining points to 10");
         let new_limit = 10;
-        module1.set_remaining_points(new_limit);
+        bot1.set_remaining_points(new_limit);
 
-        let remaining_points = module1.get_remaining_points();
+        let remaining_points = bot1.get_remaining_points();
         // assert_eq!(remaining_points, MeteringPoints::Remaining(new_limit));
 
         println!("Remaining points: {:?}", remaining_points);

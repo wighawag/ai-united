@@ -1,10 +1,10 @@
 use core::str;
 use json::{object, JsonValue};
 use lz4_flex::decompress;
-use machine::Executor;
+use machine::Battle;
 use std::{env, slice};
 
-fn execute_module(payload: &str) {
+fn execute_battle(payload: &str) {
     let s = unsafe {
         // First, we build a &[u8]...
         let slice = slice::from_raw_parts(payload.as_ptr().add(2), payload.len() - 2);
@@ -24,12 +24,12 @@ fn execute_module(payload: &str) {
         decompress(&compressed_bytes, 1000000).expect("failed to decompress in to 1,000,000 bytes");
     let wasm_bytes_2: &mut [u8] = &mut wasm_bytes_2; //cast to `&mut [u8]`
 
-    let mut executor = Executor::new();
-    executor.add_module(wasm_bytes_1);
-    executor.add_module(wasm_bytes_2);
+    let mut battle = Battle::new();
+    battle.add_bot(wasm_bytes_1);
+    battle.add_bot(wasm_bytes_2);
 
     println!("execute!");
-    executor.execute();
+    battle.execute();
 }
 
 pub async fn handle_advance(
@@ -42,7 +42,7 @@ pub async fn handle_advance(
         .as_str()
         .ok_or("Missing payload")?;
 
-    execute_module(payload);
+    execute_battle(payload);
 
     Ok("accept")
 }

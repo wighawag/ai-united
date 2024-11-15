@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "module-rust"
+name = "bot-example-rust"
 version = "0.1.0"
