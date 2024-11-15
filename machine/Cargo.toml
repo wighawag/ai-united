@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rapier2d = { version = "0.22.0", features = [ "enhanced-determinism" ] }
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 wasmer = { version = "5.0.0", default-features=false, features=["js-default"]}

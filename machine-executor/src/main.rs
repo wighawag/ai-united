@@ -82,6 +82,6 @@ fn main() {
     println!("addding bot 2 ...");
     battle.add_bot(wasm_bytes_2);
 
-    println!("execute!");
+    println!("battle!");
     battle.execute();
 }

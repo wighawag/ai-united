@@ -10,6 +10,6 @@ pub extern "C" fn init(seed: u32) {
 }
 
 #[no_mangle]
-pub extern "C" fn update(_data1: u32, _data2: u32) -> u32 {
+pub extern "C" fn update(_my_units: u32, _enemy_units: u32) -> u32 {
     return 5;
 }

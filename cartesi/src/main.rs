@@ -25,10 +25,12 @@ fn execute_battle(payload: &str) {
     let wasm_bytes_2: &mut [u8] = &mut wasm_bytes_2; //cast to `&mut [u8]`
 
     let mut battle = Battle::new();
+    println!("addding bot 1 ...");
     battle.add_bot(wasm_bytes_1);
+    println!("addding bot 2 ...");
     battle.add_bot(wasm_bytes_2);
 
-    println!("execute!");
+    println!("battle!");
     battle.execute();
 }
 
