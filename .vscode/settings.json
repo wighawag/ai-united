@@ -2,6 +2,8 @@
     "rust-analyzer.linkedProjects": [
         "./cartesi/Cargo.toml",
         "./machine/Cargo.toml",
-        "./modules/rust/Cargo.toml"
+         "./modules/rust/Cargo.toml",
+        "./wasm2hex/Cargo.toml",
+        "./machine-executor/Cargo.toml"
     ]
 }
