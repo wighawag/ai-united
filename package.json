@@ -2,9 +2,14 @@
   "name": "botpit-web",
   "version": "0.0.0",
   "devDependencies": {
-    "@cartesi/cli": "^1.5.0"
+    "@cartesi/cli": "^1.5.0",
+    "as-soon": "^0.0.9",
+    "wait-on": "^8.0.1"
   },
   "scripts": {
+    "cartesi:build": "cartesi build",
+    "cartesi:build:watch": "as-soon -w cartesi/src pnpm cartesi:build",
+    "cartesi:run": "wait-on .cartesi/image/hash && cartesi run",
     "start": "zellij delete-session $npm_package_name; zellij --layout zellij.kdl -s $npm_package_name"
   }
 }

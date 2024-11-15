@@ -1,0 +1,10 @@
+{
+  "name": "botpit-machine",
+  "devDependencies": {
+    "as-soon": "^0.0.9"
+  },
+  "scripts": {
+    "build": "wasm-pack build --target web && echo 'export const wasmExports = await __wbg_init();' >> pkg/machine.js",
+    "build:watch": "as-soon -w ./src pnpm build"
+  }
+}

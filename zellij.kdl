@@ -4,10 +4,31 @@ layout {
 			pane name="shell" command="bash" {
 				args "-c" "${SHELL-bash}"
 			}
-			pane name="cartesi build" command="bash" {
-				args "-c" "pnpm cartesi build;  ${SHELL-bash}"
-			}
+			
 		}
-	
+
+		pane split_direction="vertical" {
+			
+			// need to wait cartesi build
+			//  but when cartesi build again, the running one get into issues
+			// pane name="cartesi build" command="bash" {
+			// 	args "-c" "pnpm cartesi:build:watch;  ${SHELL-bash}"
+			// }
+			// pane name="cartesi run" command="bash" {
+			// 	args "-c" "pnpm cartesi:run;  ${SHELL-bash}"
+			// }
+			// so instead we build once and open a shell
+			pane name="cartesi build" command="bash" {
+				args "-c" "pnpm cartesi:build;  ${SHELL-bash}"
+			}
+			pane name="cartesi run" command="bash" {
+				args "-c" "${SHELL-bash}"
+			}
+			//
+			pane name="machine-web-build" command="bash" {
+				args "-c" "pnpm run --filter ./machine build:watch; ${SHELL-bash}"
+			}
+
+		}
 	}
 }

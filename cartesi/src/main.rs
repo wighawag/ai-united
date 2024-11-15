@@ -1,6 +1,6 @@
 use core::str;
 use json::{object, JsonValue};
-// use lz4_flex::decompress;
+use lz4_flex::decompress;
 use machine::Executor;
 use std::{env, slice};
 
@@ -14,17 +14,22 @@ fn execute_module(payload: &str) {
     }
     .expect("failed to slice payload");
 
-    let mut compressed_bytes = hex::decode(s).expect("failed to decode payload");
+    let compressed_bytes = hex::decode(s).expect("failed to decode payload");
 
-    // let mut decompressed_bytes =
-    //     decompress(&compressed_bytes, 1000000).expect("failed to decompress in to 1,000,000 bytes");
-    // let decompressed_bytes: &mut [u8] = &mut decompressed_bytes; //cast to `&mut [u8]`
+    let mut wasm_bytes_1 =
+        decompress(&compressed_bytes, 1000000).expect("failed to decompress in to 1,000,000 bytes");
+    let wasm_bytes_1: &mut [u8] = &mut wasm_bytes_1; //cast to `&mut [u8]`
 
-    // let mut executor = Executor::new();
-    // executor.execute(decompressed_bytes);
+    let mut wasm_bytes_2 =
+        decompress(&compressed_bytes, 1000000).expect("failed to decompress in to 1,000,000 bytes");
+    let wasm_bytes_2: &mut [u8] = &mut wasm_bytes_2; //cast to `&mut [u8]`
+
     let mut executor = Executor::new();
-    let compressed_bytes: &mut [u8] = &mut compressed_bytes; //cast to `&mut [u8]`
-    executor.execute(compressed_bytes);
+    executor.add_module(wasm_bytes_1);
+    executor.add_module(wasm_bytes_2);
+
+    println!("execute!");
+    executor.execute();
 }
 
 pub async fn handle_advance(
