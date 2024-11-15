@@ -19,10 +19,18 @@ layout {
 				args "-c" "${SHELL-bash}"
 			}
 			//
+			
+
+		}
+
+		pane split_direction="vertical" {
 			pane name="machine-web-build" command="bash" {
 				args "-c" "pnpm run --filter ./machine build:watch; ${SHELL-bash}"
 			}
 
+			pane name="web" command="bash" {
+				args "-c" "npx serve .; ${SHELL-bash}"
+			}
 		}
 
 		pane split_direction="vertical" {
