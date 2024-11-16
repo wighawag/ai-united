@@ -29,7 +29,7 @@ layout {
 			}
 
 			pane name="web" command="bash" {
-				args "-c" "npx serve .; ${SHELL-bash}"
+				args "-c" "pnpm run --filter ./web dev; cd ./web; ${SHELL-bash}"
 			}
 		}
 
