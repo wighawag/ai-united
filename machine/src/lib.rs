@@ -115,11 +115,10 @@ fn create_bot_module(wasm_bytes: &mut [u8], handle: RigidBodyHandle) -> BotModul
         // the Wasm module execution. It should return the cost of the operator
         // that it received as it first argument.
         let cost_function = |operator: &Operator| -> u64 {
-            match operator {
-                Operator::LocalGet { .. } | Operator::I32Const { .. } => 1,
-                Operator::I32Add { .. } => 2,
-                _ => 0,
-            }
+            100
+            // match operator {
+            //     _ => 100,
+            // }
         };
 
         // Now let's create our metering middleware.
@@ -319,25 +318,21 @@ impl BotModule {
         }
     }
 
-    // fn get_remaining_points(&mut self) -> MeteringPoints {
-    //     #[cfg(not(target_arch = "wasm32"))]
-    //     let points = get_remaining_points(&mut self.store, &self.instance);
+    fn get_remaining_points(&mut self) -> MeteringPoints {
+        #[cfg(not(target_arch = "wasm32"))]
+        let points = get_remaining_points(&mut self.store, &self.instance);
 
-    //     #[cfg(target_arch = "wasm32")]
-    //     let points = MeteringPoints::Remaining(0);
+        #[cfg(target_arch = "wasm32")]
+        let points = MeteringPoints::Remaining(0);
 
-    //     points
-    // }
+        points
+    }
 
     #[allow(unused_variables)]
     fn set_remaining_points(&mut self, points: u64) {
         #[cfg(not(target_arch = "wasm32"))]
         set_remaining_points(&mut self.store, &self.instance, points)
     }
-}
-
-struct Winner {
-    pub winner: u32,
 }
 
 // Define a struct to hold our custom event handler
@@ -386,6 +381,21 @@ impl EventHandler for CustomEventHandler {
                             println!("Ball <-> Bot2's goal!");
                             if let Ok(mut winner) = self.winner.write() {
                                 *winner = 1;
+                            }
+                        } else if user_data1 == ObjectType::Ball as u128
+                            && user_data2 == ObjectType::Bot1Goal as u128
+                        {
+                            println!("Ball <-> Bot1's goal!");
+                            // self.winner.store(1, Ordering::SeqCst);
+                            if let Ok(mut winner) = self.winner.write() {
+                                *winner = 2;
+                            }
+                        } else if user_data2 == ObjectType::Ball as u128
+                            && user_data1 == ObjectType::Bot1Goal as u128
+                        {
+                            println!("Ball <-> Bot1's goal!");
+                            if let Ok(mut winner) = self.winner.write() {
+                                *winner = 2;
                             }
                         }
                     }
@@ -442,6 +452,14 @@ impl Battle {
             .translation(vector![0.0, -0.05, 0.0])
             .build();
         collider_set.insert(collider);
+
+        // and the roof
+        let collider = ColliderBuilder::cuboid(20.0, 0.1, 20.0)
+            .translation(vector![0.0, 20.0, 0.0])
+            .build();
+        collider_set.insert(collider);
+
+        // and the walls
 
         let collider = ColliderBuilder::cuboid(0.1, 20.0, 20.0)
             .translation(vector![-10.0 - 0.05, 0.0, 0.0])
@@ -670,6 +688,9 @@ impl Battle {
             bot2_pos.x, bot2_pos.y, bot2_pos.z, ball_pos.x, ball_pos.y, ball_pos.z, bot1_pos.x,
             bot1_pos.y, bot1_pos.z,
         )));
+
+        // let remain = bot1.get_remaining_points();
+        // println!("remaining points: {:?}", remain);
 
         self.rigid_body_set[bot1.handle].apply_impulse(bot1_vector, true);
         // self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 1.0, 0.0], true);

@@ -59,6 +59,17 @@
 />
 
 <Grid
+	plane="xz"
+	gridSize={[gridSize, gridSize]}
+	cellColor={gridColor}
+	sectionColor={gridSectionColor}
+	sectionThickness={gridSectionThickness}
+	backgroundOpacity={0.0}
+	type={'grid'}
+	position={[0.0, gridSize, 0.0]}
+/>
+
+<Grid
 	plane="xy"
 	gridSize={[gridSize, gridSize]}
 	cellColor={gridColor}
