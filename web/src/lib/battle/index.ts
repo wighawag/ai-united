@@ -12,12 +12,14 @@ export type BattleState = {
 	bot2: Position;
 	ball: Position;
 	initialized: boolean;
+	winner: number;
 };
 const $battle: BattleState = {
 	step: 0,
 	bot1: { x: 0, y: 0, z: 0 },
 	bot2: { x: 0, y: 0, z: 0 },
 	ball: { x: 0, y: 0, z: 0 },
+	winner: 0,
 	initialized: false
 };
 const _battle = writable($battle);
@@ -35,6 +37,7 @@ function update() {
 	if ($battle.battle) {
 		const result = $battle.battle.update();
 		if (result > 0) {
+			$battle.winner = result;
 			updateState();
 			console.log(`Winner: ${result}`);
 			return;
@@ -70,6 +73,8 @@ function update() {
 let last_wasm_bytes_1: Uint8Array | undefined;
 let last_wasm_bytes_2: Uint8Array | undefined;
 export function play(wasm_bytes_1: Uint8Array, wasm_bytes_2: Uint8Array) {
+	$battle.winner = 0;
+
 	last_wasm_bytes_1 = wasm_bytes_1;
 	last_wasm_bytes_2 = wasm_bytes_2;
 	const battle = new Battle();
@@ -79,7 +84,9 @@ export function play(wasm_bytes_1: Uint8Array, wasm_bytes_2: Uint8Array) {
 	battle.add_bot(wasm_bytes_2);
 	battle.init();
 
-	update();
+	updateState();
+
+	setTimeout(update, 1100);
 }
 
 export function replay() {

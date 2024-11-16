@@ -28,7 +28,7 @@
 	const gridSectionThickness = undefined;
 </script>
 
-<T.PerspectiveCamera makeDefault position={[10, 5, 10]} lookAt.y={0.5}>
+<T.PerspectiveCamera makeDefault position={[-15, 31, 20]} lookAt.y={10}>
 	<OrbitControls
 		{enableDamping}
 		{autoRotate}

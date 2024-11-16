@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-const _files = writable<Uint8Array[]>([]);
+const _files = writable<{ one?: Uint8Array; two?: Uint8Array }>({});
 
 function handleFile(file: File): Promise<Uint8Array> {
 	return new Promise((resolve, reject) => {
@@ -22,14 +22,16 @@ function handleFile(file: File): Promise<Uint8Array> {
 	});
 }
 
-async function addFiles(filesGiven: File[]) {
-	for (const file of filesGiven) {
-		const data = await handleFile(file);
-		_files.update((v) => [...v, data]);
+async function addFile(index: 0 | 1, file: File) {
+	const data = await handleFile(file);
+	if (index == 0) {
+		_files.update((v) => ({ ...v, one: data }));
+	} else {
+		_files.update((v) => ({ ...v, two: data }));
 	}
 }
 
 export const files = {
 	subscribe: _files.subscribe,
-	addFiles
+	addFile
 };

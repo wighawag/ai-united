@@ -43,10 +43,14 @@
 />
 
 <div class="overlay">
-	<p>{$battle.step}</p>
+	<!-- <p>{$battle.step}</p>
 	<p>{JSON.stringify($battle.bot1)}</p>
 	<p>{JSON.stringify($battle.bot2)}</p>
-	<p>{JSON.stringify($battle.ball)}</p>
+	<p>{JSON.stringify($battle.ball)}</p> -->
+
+	{#if $battle.winner}
+		<p>Winner: {$battle.winner}</p>
+	{/if}
 </div>
 
 <style>

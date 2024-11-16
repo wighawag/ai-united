@@ -16,7 +16,7 @@
 	}
 </script>
 
-<Pane theme={ThemeUtils.presets.light} position="fixed" title="OrbitControls">
+<Pane theme={ThemeUtils.presets.light} position="fixed" title="OrbitControls" expanded={false}>
 	<Checkbox bind:value={autoRotate} label="autoRotate" />
 	<Checkbox bind:value={enableDamping} label="enableDamping" />
 	<Checkbox bind:value={enableZoom} label="enableZoom" />
