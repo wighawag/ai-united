@@ -319,7 +319,7 @@ impl Battle {
         bot2.init(0);
     }
 
-    fn update(&mut self) -> u8 {
+    pub fn update(&mut self) -> u8 {
         let bot1 = self.bot1.as_mut().unwrap();
         let bot2 = self.bot2.as_mut().unwrap();
 
