@@ -113,3 +113,25 @@ wasm-pack build --target web && echo "export const wasmExports = await __wbg_ini
 npx serve .
 # navigate to http://localhost:3000
 ```
+
+### blockscout
+
+We have blockscout as a submodule. It is a fork where we modified the port used so that it does not conflict with cartesi marchine
+
+## avail
+
+You can also run the game using avail.
+
+For that you need to stop any previously running process
+
+```bash
+pnpm avail:start
+```
+
+then you can execute the following once node and machine are running:
+
+You can use the same hex as before, from wasm2hex/bot.json you generated earlier
+
+```bash
+pnpm mugen-cli send
+```

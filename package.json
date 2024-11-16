@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "devDependencies": {
     "@cartesi/cli": "^1.5.0",
+    "@mugen-builders/cli": "^1.1.3",
+    "brunodo": "2.13.1-beta",
     "as-soon": "^0.0.9",
     "wait-on": "^8.0.1",
     "zellij-launcher": "^0.0.1"
@@ -11,6 +13,9 @@
     "cartesi:build": "cartesi build",
     "cartesi:build:watch": "as-soon -w cartesi/src pnpm cartesi:build",
     "cartesi:run": "wait-on .cartesi/image/hash && cartesi run",
+    "avail:run": "cartesi-machine --network --flash-drive=label:root,filename:.cartesi/image.ext2 --env=ROLLUP_HTTP_SERVER_URL=http://10.0.2.2:5004 -- /opt/cartesi/dapp/dapp",
+    "avail:node": "killall anvil; brunodo",
+    "avail:start": "zellij-launcher --layout zellij-avail.kdl a avail_ai_united || zellij --layout zellij-avail.kdl -s avail_ai_united",
     "start": "zellij-launcher --layout zellij.kdl a $npm_package_name || zellij --layout zellij.kdl -s $npm_package_name"
   }
 }

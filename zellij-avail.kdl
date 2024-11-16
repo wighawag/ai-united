@@ -1,0 +1,20 @@
+layout {
+	pane {
+		pane split_direction="vertical" {
+			pane name="shell" command="bash" {
+				args "-c" " echo 'once node and machine are running\n you can execute: `pnpm mugen-cli send`'; ${SHELL-bash}"
+			}
+		}	
+
+		
+		pane split_direction="vertical" {
+			pane name="node" command="bash" {
+				args "-c" "pnpm avail:node;  ${SHELL-bash}"
+			}
+
+			pane name="machine" command="bash" {
+				args "-c" "pnpm cartesi:build; pnpm avail:run;  ${SHELL-bash}"
+			}
+		}
+	}
+}
