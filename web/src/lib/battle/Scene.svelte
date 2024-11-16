@@ -151,7 +151,7 @@
 <T.Mesh
 	position.y={$battle.bot2.y}
 	position.x={$battle.bot2.x}
-	position.z={$battle.bot1.z}
+	position.z={$battle.bot2.z}
 	geometry={new SphereGeometry(0.5)}
 	material={new MeshStandardMaterial({
 		color: Color.NAMES.firebrick
@@ -162,7 +162,7 @@
 <T.Mesh
 	position.y={$battle.ball.y}
 	position.x={$battle.ball.x}
-	position.z={$battle.bot1.z}
+	position.z={$battle.ball.z}
 	geometry={new SphereGeometry(0.5)}
 	material={new MeshStandardMaterial({
 		color: Color.NAMES.white

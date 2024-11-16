@@ -1,6 +1,7 @@
 use nalgebra::ArrayStorage;
 use nalgebra::Const;
 use nalgebra::Matrix;
+use rapier3d::crossbeam;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::wasm_bindgen;
 #[cfg(target_arch = "wasm32")]
@@ -25,6 +26,16 @@ pub enum MeteringPoints {
     /// exhausted.  You can recover from this state by setting the
     /// points via [`set_remaining_points`] and restart the execution.
     Exhausted,
+}
+
+#[derive(Copy, Clone, PartialEq)]
+enum ObjectType {
+    Any,
+    Ball,
+    Bot1Goal,
+    Bot2Goal,
+    Bot1,
+    Bot2,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -198,10 +209,10 @@ impl BotModule {
                 {
                     let remaining_points_after_call =
                         get_remaining_points(&mut self.store, &self.instance);
-                    println!(
-                        "Calling `init` succeeded. points left: {:?}",
-                        remaining_points_after_call
-                    );
+                    // println!(
+                    //     "Calling `init` succeeded. points left: {:?}",
+                    //     remaining_points_after_call
+                    // );
                 }
             }
             Err(_) => {
@@ -246,10 +257,10 @@ impl BotModule {
                 {
                     let remaining_points_after_call =
                         get_remaining_points(&mut self.store, &self.instance);
-                    println!(
-                        "Calling `update` succeeded. points left: {:?}",
-                        remaining_points_after_call
-                    );
+                    // println!(
+                    //     "Calling `update` succeeded. points left: {:?}",
+                    //     remaining_points_after_call
+                    // );
                 }
             }
             Err(err) => {
@@ -356,15 +367,17 @@ impl Battle {
         //     .build();
         // collider_set.insert(collider);
 
-        let collider = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
+        let collider_for_bot1_goal = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
             .translation(vector![-10.4, 0.0, 0.0])
+            .user_data(ObjectType::Bot1Goal as u128)
             .build();
-        collider_set.insert(collider);
+        collider_set.insert(collider_for_bot1_goal);
 
-        let collider = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
+        let collider_for_bot2_goal = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
             .translation(vector![10.4, 0.0, 0.0])
+            .user_data(ObjectType::Bot2Goal as u128)
             .build();
-        collider_set.insert(collider);
+        collider_set.insert(collider_for_bot2_goal);
 
         // // Define dome parameters
         // let dome_radius = 5.0;
@@ -402,7 +415,11 @@ impl Battle {
         let rigid_body = RigidBodyBuilder::dynamic()
             .translation(vector![0.0, 10.0 - 0.25, 0.0])
             .build();
-        let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
+        let collider = ColliderBuilder::ball(0.5)
+            .active_events(ActiveEvents::COLLISION_EVENTS)
+            .restitution(0.7)
+            .user_data(ObjectType::Ball as u128)
+            .build();
         let ball = rigid_body_set.insert(rigid_body);
         collider_set.insert_with_parent(collider, ball, &mut rigid_body_set);
 
@@ -427,12 +444,20 @@ impl Battle {
         }
     }
 
-    fn create_bot_handle(&mut self, position: Position) -> RigidBodyHandle {
+    fn create_bot_handle(
+        &mut self,
+        position: Position,
+        object_type: ObjectType,
+    ) -> RigidBodyHandle {
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
             .translation(vector![position.x, position.y, position.y])
             .build();
-        let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
+        let collider = ColliderBuilder::ball(0.5)
+            .active_events(ActiveEvents::COLLISION_EVENTS)
+            .restitution(0.7)
+            .user_data(object_type as u128)
+            .build();
         let handle = self.rigid_body_set.insert(rigid_body);
         self.collider_set
             .insert_with_parent(collider, handle, &mut self.rigid_body_set);
@@ -473,19 +498,25 @@ impl Battle {
             if let Some(_existing_bot) = &self.bot2 {
                 panic!("already both bots added");
             } else {
-                let handle = self.create_bot_handle(Position {
-                    x: 10.0 - 0.25,
-                    y: 0.25,
-                    z: 0.0,
-                });
+                let handle = self.create_bot_handle(
+                    Position {
+                        x: 9.0,
+                        y: 0.25,
+                        z: 0.0,
+                    },
+                    ObjectType::Bot2,
+                );
                 self.bot2 = Some(create_bot_module(wasm_bytes, handle));
             }
         } else {
-            let handle = self.create_bot_handle(Position {
-                x: -10.0 + 0.25,
-                y: 0.25,
-                z: 0.0,
-            });
+            let handle = self.create_bot_handle(
+                Position {
+                    x: -9.0,
+                    y: 0.25,
+                    z: 0.0,
+                },
+                ObjectType::Bot1,
+            );
             self.bot1 = Some(create_bot_module(wasm_bytes, handle));
         }
     }
@@ -501,21 +532,91 @@ impl Battle {
         bot1.init(0);
         bot2.init(0);
 
-        self.rigid_body_set[bot1.handle].apply_impulse(vector![1.0, 1.0, 0.0], true);
-        self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 1.0, 0.0], true);
+        self.rigid_body_set[bot1.handle].apply_impulse(vector![1.0, 0.0, 0.0], true);
+        // self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 1.0, 0.0], true);
+        self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 0.0, 1.0], true);
     }
 
     pub fn update(&mut self) -> u8 {
+        // // Initialize the event collector.
+        // let (collision_send, collision_recv) = crossbeam::channel::unbounded();
+        // let (contact_force_send, contact_force_recv) = crossbeam::channel::unbounded();
+        // let event_handler = ChannelEventCollector::new(collision_send, contact_force_send);
+
         let bot1 = self.bot1.as_mut().unwrap();
         let bot2 = self.bot2.as_mut().unwrap();
 
         bot1.set_remaining_points(COMPUTE_ACTIONS_GAS);
         bot2.set_remaining_points(COMPUTE_ACTIONS_GAS);
 
-        println!("Calling `compute_actions` ...");
+        // println!("Calling `compute_actions` ...");
         // TODO
         bot1.compute_actions(0, 0, 0, 0, 0, 0);
         bot2.compute_actions(0, 0, 0, 0, 0, 0);
+
+        // Define a struct to hold our custom event handler
+        struct CustomEventHandler;
+
+        impl EventHandler for CustomEventHandler {
+            fn handle_collision_event(
+                &self,
+                _bodies: &RigidBodySet,
+                colliders: &ColliderSet,
+                collision_event: CollisionEvent,
+                _contact_pair: Option<&ContactPair>,
+            ) {
+                // println!("collision_event, {:?}", collision_event);
+                match collision_event {
+                    CollisionEvent::Started(h1, h2, _) => {
+                        if let Some(collider1) = colliders.get(h1) {
+                            if let Some(collider2) = colliders.get(h2) {
+                                let user_data1 = collider1.user_data;
+                                let user_data2 = collider2.user_data;
+
+                                if user_data1 == ObjectType::Ball as u128
+                                    && user_data2 == ObjectType::Bot1 as u128
+                                {
+                                    println!("Ball <-> Bot1");
+                                    // Add your logic for Bot1's goal here
+                                } else if user_data1 == ObjectType::Ball as u128
+                                    || user_data2 == ObjectType::Bot2Goal as u128
+                                {
+                                    println!("Collision with Bot2's goal!");
+                                    // Add your logic for Bot2's goal here
+                                }
+                            }
+                        }
+                    }
+                    CollisionEvent::Stopped(_, _, _) => {
+                        // Handle collision end if needed
+                    }
+                }
+            }
+
+            fn handle_contact_force_event(
+                &self,
+                dt: f32,
+                bodies: &RigidBodySet,
+                colliders: &ColliderSet,
+                contact_pair: &ContactPair,
+                total_force_magnitude: f32,
+            ) {
+                println!("contact_force_event")
+            }
+        }
+
+        let event_handler = CustomEventHandler;
+
+        // // Make sure to set up the event handler with the physics pipeline
+        // // let mut physics_hooks = ChannelEventCollector::new();
+        // self.physics_hooks.handle_collision_event(
+        //     &self.rigid_body_set,
+        //     &self.collider_set,
+        //     event,
+        //     contact_pair,
+        // );
+        // self.physics_hooks
+        //     .set_collision_event_handler(Box::new(event_handler));
 
         /* Run the game loop, stepping the simulation once per frame. */
         self.physics_pipeline.step(
@@ -531,11 +632,118 @@ impl Battle {
             &mut self.ccd_solver,
             Some(&mut self.query_pipeline),
             &self.physics_hooks,
-            &self.event_handler,
+            &event_handler,
         );
 
-        let ball_body = &self.rigid_body_set[self.ball];
-        println!("Ball altitude: {}", ball_body.translation().y);
+        // while let Ok(collision_event) = collision_recv.try_recv() {
+        //     // Handle the collision event.
+        //     println!("Received collision event: {:?}", collision_event);
+        // }
+
+        // while let Ok(contact_force_event) = contact_force_recv.try_recv() {
+        //     // Handle the contact force event.
+        //     println!("Received contact force event: {:?}", contact_force_event);
+        // }
+
+        // if let Some(ball_body) = self.rigid_body_set.get(self.ball) {
+        //     let ball_position = ball_body.position();
+
+        //     let query_filter = QueryFilter::default().exclude_rigid_body(self.ball); // Exclude the ball itself from the query
+
+        //     let collision_with_goal1 = self.query_pipeline.intersection_with_shape(
+        //         &self.rigid_body_set,
+        //         &self.collider_set,
+        //         ball_position,
+        //         &Ball::new(0.5), // Assuming the ball has a radius of 0.5, adjust as needed
+        //         query_filter,
+        //     );
+
+        //     let collision_with_goal2 = self.query_pipeline.intersection_with_shape(
+        //         &self.rigid_body_set,
+        //         &self.collider_set,
+        //         ball_position,
+        //         &Ball::new(0.5), // Assuming the ball has a radius of 0.5, adjust as needed
+        //         query_filter,
+        //     );
+
+        //     let collision_with_goal2 = self.query_pipeline.intersection_with_shape(
+        //         &self.rigid_body_set,
+        //         &self.collider_set,
+        //         ball_position,
+        //         &Ball::new(0.5), // Assuming the ball has a radius of 0.5, adjust as needed
+        //         query_filter,
+        //     );
+
+        //     if let Some(collider_handle) = collision_with_goal1 {
+        //         if let Some(collider) = self.collider_set.get(collider_handle) {
+        //             match collider.user_data {
+        //                 data if data == ObjectType::Bot1 as u128 => {
+        //                     println!("Collision Bot1 <-> Bot1Goal");
+        //                     // Add your logic for Bot1's goal here
+        //                 }
+        //                 data if data == ObjectType::Bot2 as u128 => {
+        //                     println!("Collision Bot2 <-> Bot1Goal");
+        //                     // Add your logic for Bot2's goal here
+        //                 }
+        //                 data if data == ObjectType::Ball as u128 => {
+        //                     println!("Collision Ball <-> Bot1Goal !!!!!!!!!!!!!!!!!");
+        //                     // Add your logic for Bot2's goal here
+        //                 }
+        //                 _ => (), //println!("Collision with unknown object"),
+        //             }
+        //         }
+        //     } else if let Some(collider_handle) = collision_with_goal2 {
+        //         if let Some(collider) = self.collider_set.get(collider_handle) {
+        //             match collider.user_data {
+        //                 data if data == ObjectType::Bot1 as u128 => {
+        //                     println!("Collision Bot1 <-> Bot2Goal");
+        //                     // Add your logic for Bot1's goal here
+        //                 }
+        //                 data if data == ObjectType::Bot2 as u128 => {
+        //                     println!("Collision Bot2 <-> Bot2Goal");
+        //                     // Add your logic for Bot2's goal here
+        //                 }
+        //                 data if data == ObjectType::Ball as u128 => {
+        //                     println!("Collision Ball <-> Bot2Goal !!!!!!!!!!!!!!!!!");
+        //                     // Add your logic for Bot2's goal here
+        //                 }
+        //                 _ => (), //println!("Collision with unknown object"),
+        //             }
+        //         }
+        //     }
+        // } else {
+        //     println!("Ball not found in rigid body set");
+        // }
+
+        // let ball_body = &self.rigid_body_set[self.ball];
+        // println!("Ball altitude: {}", ball_body.translation().y);
+
+        // let ball_body: &RigidBody = &self.rigid_body_set[self.ball];
+        // println!(
+        //     "Ball position: ({}, {})",
+        //     ball_body.translation().x,
+        //     ball_body.translation().z
+        // );
+
+        // if let Some(bot1) = &self.bot1 {
+        //     let bot1_body: &RigidBody = &self.rigid_body_set[bot1.handle];
+        //     println!(
+        //         "Bot1 position: ({}, {}, {})",
+        //         bot1_body.translation().x,
+        //         bot1_body.translation().y,
+        //         bot1_body.translation().z
+        //     );
+        // }
+
+        // if let Some(bot2) = &self.bot2 {
+        //     let bot2_body: &RigidBody = &self.rigid_body_set[bot2.handle];
+        //     println!(
+        //         "Bot2 position: ({}, {}, {})",
+        //         bot2_body.translation().x,
+        //         bot2_body.translation().y,
+        //         bot2_body.translation().z
+        //     );
+        // }
 
         // TODO ball in camp
         0
