@@ -1,3 +1,8 @@
+use std::cell::RefCell;
+use std::sync::atomic::AtomicI32;
+use std::sync::atomic::Ordering;
+use std::sync::RwLock;
+
 use nalgebra::ArrayStorage;
 use nalgebra::Const;
 use nalgebra::Matrix;
@@ -303,6 +308,79 @@ impl BotModule {
     }
 }
 
+struct Winner {
+    pub winner: u32,
+}
+
+// Define a struct to hold our custom event handler
+struct CustomEventHandler {
+    // pub winner: AtomicI32,
+    pub winner: RwLock<u8>,
+}
+
+impl EventHandler for CustomEventHandler {
+    fn handle_collision_event(
+        &self,
+        _bodies: &RigidBodySet,
+        colliders: &ColliderSet,
+        collision_event: CollisionEvent,
+        _contact_pair: Option<&ContactPair>,
+    ) {
+        // println!("collision_event, {:?}", collision_event);
+        match collision_event {
+            CollisionEvent::Started(h1, h2, _) => {
+                if let Some(collider1) = colliders.get(h1) {
+                    if let Some(collider2) = colliders.get(h2) {
+                        let user_data1 = collider1.user_data;
+                        let user_data2 = collider2.user_data;
+
+                        if user_data1 == ObjectType::Ball as u128
+                            && user_data2 == ObjectType::Bot1 as u128
+                        {
+                            println!("Ball <-> Bot1");
+
+                            // Add your logic for Bot1's goal here
+                        } else if user_data2 == ObjectType::Ball as u128
+                            && user_data1 == ObjectType::Bot1 as u128
+                        {
+                            println!("Ball <-> Bot1");
+                        } else if user_data1 == ObjectType::Ball as u128
+                            && user_data2 == ObjectType::Bot2Goal as u128
+                        {
+                            println!("Ball <-> Bot2's goal!");
+                            // self.winner.store(1, Ordering::SeqCst);
+                            if let Ok(mut winner) = self.winner.write() {
+                                *winner = 1;
+                            }
+                        } else if user_data2 == ObjectType::Ball as u128
+                            && user_data1 == ObjectType::Bot2Goal as u128
+                        {
+                            println!("Ball <-> Bot2's goal!");
+                            if let Ok(mut winner) = self.winner.write() {
+                                *winner = 1;
+                            }
+                        }
+                    }
+                }
+            }
+            CollisionEvent::Stopped(_, _, _) => {
+                // Handle collision end if needed
+            }
+        }
+    }
+
+    fn handle_contact_force_event(
+        &self,
+        dt: f32,
+        bodies: &RigidBodySet,
+        colliders: &ColliderSet,
+        contact_pair: &ContactPair,
+        total_force_magnitude: f32,
+    ) {
+        println!("contact_force_event")
+    }
+}
+
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Battle {
     bot1: Option<BotModule>,
@@ -374,7 +452,7 @@ impl Battle {
         collider_set.insert(collider_for_bot1_goal);
 
         let collider_for_bot2_goal = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
-            .translation(vector![10.4, 0.0, 0.0])
+            .translation(vector![8.4, 0.0, 0.0])
             .user_data(ObjectType::Bot2Goal as u128)
             .build();
         collider_set.insert(collider_for_bot2_goal);
@@ -554,58 +632,9 @@ impl Battle {
         bot1.compute_actions(0, 0, 0, 0, 0, 0);
         bot2.compute_actions(0, 0, 0, 0, 0, 0);
 
-        // Define a struct to hold our custom event handler
-        struct CustomEventHandler;
-
-        impl EventHandler for CustomEventHandler {
-            fn handle_collision_event(
-                &self,
-                _bodies: &RigidBodySet,
-                colliders: &ColliderSet,
-                collision_event: CollisionEvent,
-                _contact_pair: Option<&ContactPair>,
-            ) {
-                // println!("collision_event, {:?}", collision_event);
-                match collision_event {
-                    CollisionEvent::Started(h1, h2, _) => {
-                        if let Some(collider1) = colliders.get(h1) {
-                            if let Some(collider2) = colliders.get(h2) {
-                                let user_data1 = collider1.user_data;
-                                let user_data2 = collider2.user_data;
-
-                                if user_data1 == ObjectType::Ball as u128
-                                    && user_data2 == ObjectType::Bot1 as u128
-                                {
-                                    println!("Ball <-> Bot1");
-                                    // Add your logic for Bot1's goal here
-                                } else if user_data1 == ObjectType::Ball as u128
-                                    || user_data2 == ObjectType::Bot2Goal as u128
-                                {
-                                    println!("Collision with Bot2's goal!");
-                                    // Add your logic for Bot2's goal here
-                                }
-                            }
-                        }
-                    }
-                    CollisionEvent::Stopped(_, _, _) => {
-                        // Handle collision end if needed
-                    }
-                }
-            }
-
-            fn handle_contact_force_event(
-                &self,
-                dt: f32,
-                bodies: &RigidBodySet,
-                colliders: &ColliderSet,
-                contact_pair: &ContactPair,
-                total_force_magnitude: f32,
-            ) {
-                println!("contact_force_event")
-            }
-        }
-
-        let event_handler = CustomEventHandler;
+        let event_handler = CustomEventHandler {
+            winner: RwLock::new(0),
+        };
 
         // // Make sure to set up the event handler with the physics pipeline
         // // let mut physics_hooks = ChannelEventCollector::new();
@@ -746,7 +775,18 @@ impl Battle {
         // }
 
         // TODO ball in camp
-        0
+
+        let winner = {
+            match event_handler.winner.read() {
+                Ok(guard) => *guard, // Dereference to get the actual value
+                Err(_) => {
+                    // Handle potential poisoned lock
+                    println!("Warning: RwLock was poisoned. Using default value.");
+                    0 // Or any other default value
+                }
+            }
+        };
+        winner
     }
 
     pub fn execute(&mut self) -> u8 {
