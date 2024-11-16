@@ -47,6 +47,18 @@ function update() {
 			}
 		}
 
+		const bot1Postion = $battle.battle.getBot1();
+		$battle.bot1.x = bot1Postion.x;
+		$battle.bot1.y = bot1Postion.y;
+
+		const bot2Postion = $battle.battle.getBot2();
+		$battle.bot2.x = bot2Postion.x;
+		$battle.bot2.y = bot2Postion.y;
+
+		const ballPostion = $battle.battle.getBall();
+		$battle.ball.x = ballPostion.x;
+		$battle.ball.y = ballPostion.y;
+
 		updateState();
 		currentPendingAnimationFrame = requestAnimationFrame(update);
 	}

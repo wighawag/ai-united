@@ -43,13 +43,20 @@ use {
 use wasmer::Function;
 use wasmer::{imports, FunctionEnv, FunctionEnvMut, Instance, Module, Store, TypedFunction};
 
-use rapier2d::prelude::*;
+use rapier3d::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub fn start() -> Result<(), JsValue> {
     set_panic_hook();
     Ok(())
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+pub struct Position {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 struct BotModule {
@@ -292,7 +299,7 @@ pub struct Battle {
     collider_set: ColliderSet,
     physics_pipeline: PhysicsPipeline,
     rigid_body_set: RigidBodySet,
-    gravity: Matrix<f32, Const<2>, Const<1>, ArrayStorage<f32, 2, 1>>,
+    gravity: Matrix<f32, Const<3>, Const<1>, ArrayStorage<f32, 3, 1>>,
     integration_parameters: IntegrationParameters,
     island_manager: IslandManager,
     broad_phase: BroadPhaseMultiSap,
@@ -314,26 +321,26 @@ impl Battle {
         let mut collider_set = ColliderSet::new();
 
         /* Create the ground. */
-        let collider = ColliderBuilder::cuboid(100.0, 0.1).build();
+        let collider = ColliderBuilder::cuboid(100.0, 0.1, 100.0).build();
         collider_set.insert(collider);
 
         /* Create other structures necessary for the simulation. */
-        let gravity = vector![0.0, -9.81];
+        let gravity = vector![0.0, -9.81, 0.0];
         let integration_parameters = IntegrationParameters::default();
-        let physics_pipeline = PhysicsPipeline::new();
-        let island_manager = IslandManager::new();
-        let broad_phase = DefaultBroadPhase::new();
-        let narrow_phase = NarrowPhase::new();
-        let impulse_joint_set = ImpulseJointSet::new();
-        let multibody_joint_set = MultibodyJointSet::new();
-        let ccd_solver = CCDSolver::new();
-        let query_pipeline = QueryPipeline::new();
+        let mut physics_pipeline = PhysicsPipeline::new();
+        let mut island_manager = IslandManager::new();
+        let mut broad_phase = DefaultBroadPhase::new();
+        let mut narrow_phase = NarrowPhase::new();
+        let mut impulse_joint_set = ImpulseJointSet::new();
+        let mut multibody_joint_set = MultibodyJointSet::new();
+        let mut ccd_solver = CCDSolver::new();
+        let mut query_pipeline = QueryPipeline::new();
         let physics_hooks = ();
         let event_handler = ();
 
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
-            .translation(vector![0.0, 10.0])
+            .translation(vector![0.0, 10.0, 0.0])
             .build();
         let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
         let ball = rigid_body_set.insert(rigid_body);
@@ -363,13 +370,42 @@ impl Battle {
     fn create_bot_handle(&mut self) -> RigidBodyHandle {
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
-            .translation(vector![0.0, 10.0])
+            .translation(vector![0.0, 10.0, 0.0])
             .build();
         let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
         let handle = self.rigid_body_set.insert(rigid_body);
         self.collider_set
             .insert_with_parent(collider, handle, &mut self.rigid_body_set);
         handle
+    }
+
+    pub fn getBot1(&self) -> Position {
+        let bot = self.bot1.as_ref().unwrap();
+        let body = &self.rigid_body_set[bot.handle];
+        Position {
+            x: body.translation().x,
+            y: body.translation().y,
+            z: body.translation().z,
+        }
+    }
+
+    pub fn getBot2(&self) -> Position {
+        let bot = self.bot2.as_ref().unwrap();
+        let body = &self.rigid_body_set[bot.handle];
+        Position {
+            x: body.translation().x,
+            y: body.translation().y,
+            z: body.translation().z,
+        }
+    }
+
+    pub fn getBall(&self) -> Position {
+        let body = &self.rigid_body_set[self.ball];
+        Position {
+            x: body.translation().x,
+            y: body.translation().y,
+            z: body.translation().z,
+        }
     }
 
     pub fn add_bot(&mut self, wasm_bytes: &mut [u8]) {

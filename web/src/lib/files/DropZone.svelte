@@ -15,4 +15,7 @@
 {:else}
 	<button onclick={() => play($files[0], $files[1])}>Play</button>
 	<p>{$battle.step}</p>
+	<p>{JSON.stringify($battle.bot1)}</p>
+	<p>{JSON.stringify($battle.bot2)}</p>
+	<p>{JSON.stringify($battle.ball)}</p>
 {/if}
