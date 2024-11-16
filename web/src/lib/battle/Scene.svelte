@@ -2,7 +2,7 @@
 	import { T } from '@threlte/core';
 	import { Gizmo, OrbitControls } from '@threlte/extras';
 
-	import { BoxGeometry, MeshStandardMaterial, SphereGeometry } from 'three';
+	import { BoxGeometry, Color, MeshStandardMaterial, SphereGeometry } from 'three';
 
 	import { battle } from '$lib/battle';
 
@@ -42,7 +42,9 @@
 	position.x={$battle.bot1.x}
 	position.z={$battle.bot1.z}
 	geometry={new SphereGeometry(0.5)}
-	material={new MeshStandardMaterial()}
+	material={new MeshStandardMaterial({
+		color: Color.NAMES.blueviolet
+	})}
 />
 
 <!-- bot 2 -->
@@ -51,7 +53,9 @@
 	position.x={$battle.bot2.x}
 	position.z={$battle.bot1.z}
 	geometry={new SphereGeometry(0.5)}
-	material={new MeshStandardMaterial()}
+	material={new MeshStandardMaterial({
+		color: Color.NAMES.firebrick
+	})}
 />
 
 <!-- ball -->
@@ -60,5 +64,7 @@
 	position.x={$battle.ball.x}
 	position.z={$battle.bot1.z}
 	geometry={new SphereGeometry(0.5)}
-	material={new MeshStandardMaterial()}
+	material={new MeshStandardMaterial({
+		color: Color.NAMES.white
+	})}
 />
