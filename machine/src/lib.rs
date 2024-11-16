@@ -103,8 +103,8 @@ struct BotModule {
     handle: RigidBodyHandle,
 }
 
-const INIT_GAS: u64 = 1_000;
-const COMPUTE_ACTIONS_GAS: u64 = 1_000_000;
+const INIT_GAS: u64 = 100;
+const COMPUTE_ACTIONS_GAS: u64 = 1_000;
 const MAX_NUM_UPDATES: u64 = 1_000_000;
 
 fn create_bot_module(wasm_bytes: &mut [u8], handle: RigidBodyHandle) -> BotModule {
@@ -115,7 +115,7 @@ fn create_bot_module(wasm_bytes: &mut [u8], handle: RigidBodyHandle) -> BotModul
         // the Wasm module execution. It should return the cost of the operator
         // that it received as it first argument.
         let cost_function = |operator: &Operator| -> u64 {
-            100
+            1
             // match operator {
             //     _ => 100,
             // }
@@ -728,118 +728,6 @@ impl Battle {
             &event_handler,
         );
 
-        // while let Ok(collision_event) = collision_recv.try_recv() {
-        //     // Handle the collision event.
-        //     println!("Received collision event: {:?}", collision_event);
-        // }
-
-        // while let Ok(contact_force_event) = contact_force_recv.try_recv() {
-        //     // Handle the contact force event.
-        //     println!("Received contact force event: {:?}", contact_force_event);
-        // }
-
-        // if let Some(ball_body) = self.rigid_body_set.get(self.ball) {
-        //     let ball_position = ball_body.position();
-
-        //     let query_filter = QueryFilter::default().exclude_rigid_body(self.ball); // Exclude the ball itself from the query
-
-        //     let collision_with_goal1 = self.query_pipeline.intersection_with_shape(
-        //         &self.rigid_body_set,
-        //         &self.collider_set,
-        //         ball_position,
-        //         &Ball::new(0.5), // Assuming the ball has a radius of 0.5, adjust as needed
-        //         query_filter,
-        //     );
-
-        //     let collision_with_goal2 = self.query_pipeline.intersection_with_shape(
-        //         &self.rigid_body_set,
-        //         &self.collider_set,
-        //         ball_position,
-        //         &Ball::new(0.5), // Assuming the ball has a radius of 0.5, adjust as needed
-        //         query_filter,
-        //     );
-
-        //     let collision_with_goal2 = self.query_pipeline.intersection_with_shape(
-        //         &self.rigid_body_set,
-        //         &self.collider_set,
-        //         ball_position,
-        //         &Ball::new(0.5), // Assuming the ball has a radius of 0.5, adjust as needed
-        //         query_filter,
-        //     );
-
-        //     if let Some(collider_handle) = collision_with_goal1 {
-        //         if let Some(collider) = self.collider_set.get(collider_handle) {
-        //             match collider.user_data {
-        //                 data if data == ObjectType::Bot1 as u128 => {
-        //                     println!("Collision Bot1 <-> Bot1Goal");
-        //                     // Add your logic for Bot1's goal here
-        //                 }
-        //                 data if data == ObjectType::Bot2 as u128 => {
-        //                     println!("Collision Bot2 <-> Bot1Goal");
-        //                     // Add your logic for Bot2's goal here
-        //                 }
-        //                 data if data == ObjectType::Ball as u128 => {
-        //                     println!("Collision Ball <-> Bot1Goal !!!!!!!!!!!!!!!!!");
-        //                     // Add your logic for Bot2's goal here
-        //                 }
-        //                 _ => (), //println!("Collision with unknown object"),
-        //             }
-        //         }
-        //     } else if let Some(collider_handle) = collision_with_goal2 {
-        //         if let Some(collider) = self.collider_set.get(collider_handle) {
-        //             match collider.user_data {
-        //                 data if data == ObjectType::Bot1 as u128 => {
-        //                     println!("Collision Bot1 <-> Bot2Goal");
-        //                     // Add your logic for Bot1's goal here
-        //                 }
-        //                 data if data == ObjectType::Bot2 as u128 => {
-        //                     println!("Collision Bot2 <-> Bot2Goal");
-        //                     // Add your logic for Bot2's goal here
-        //                 }
-        //                 data if data == ObjectType::Ball as u128 => {
-        //                     println!("Collision Ball <-> Bot2Goal !!!!!!!!!!!!!!!!!");
-        //                     // Add your logic for Bot2's goal here
-        //                 }
-        //                 _ => (), //println!("Collision with unknown object"),
-        //             }
-        //         }
-        //     }
-        // } else {
-        //     println!("Ball not found in rigid body set");
-        // }
-
-        // let ball_body = &self.rigid_body_set[self.ball];
-        // println!("Ball altitude: {}", ball_body.translation().y);
-
-        // let ball_body: &RigidBody = &self.rigid_body_set[self.ball];
-        // println!(
-        //     "Ball position: ({}, {})",
-        //     ball_body.translation().x,
-        //     ball_body.translation().z
-        // );
-
-        // if let Some(bot1) = &self.bot1 {
-        //     let bot1_body: &RigidBody = &self.rigid_body_set[bot1.handle];
-        //     println!(
-        //         "Bot1 position: ({}, {}, {})",
-        //         bot1_body.translation().x,
-        //         bot1_body.translation().y,
-        //         bot1_body.translation().z
-        //     );
-        // }
-
-        // if let Some(bot2) = &self.bot2 {
-        //     let bot2_body: &RigidBody = &self.rigid_body_set[bot2.handle];
-        //     println!(
-        //         "Bot2 position: ({}, {}, {})",
-        //         bot2_body.translation().x,
-        //         bot2_body.translation().y,
-        //         bot2_body.translation().z
-        //     );
-        // }
-
-        // TODO ball in camp
-
         let winner = {
             match event_handler.winner.read() {
                 Ok(guard) => *guard, // Dereference to get the actual value
@@ -854,7 +742,8 @@ impl Battle {
     }
 
     pub fn execute(&mut self) -> u8 {
-        println!("battle!");
+        self.init();
+        println!("initialised.");
         let mut counter = 0;
         let mut winner;
         loop {
