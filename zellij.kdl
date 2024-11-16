@@ -53,7 +53,7 @@ layout {
 				args "-c" "cd machine-executor; ${SHELL-bash}"
 			}
 			pane name="machine-executor" command="bash" {
-				args "-c" "cd machine-executor; cargo watch -c -w src -x build; ${SHELL-bash}"
+				args "-c" "cd machine-executor; cargo watch -c -w src -w ../machine/src -x build; ${SHELL-bash}"
 			}
 		}
 	}

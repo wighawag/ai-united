@@ -4,12 +4,13 @@
   "devDependencies": {
     "@cartesi/cli": "^1.5.0",
     "as-soon": "^0.0.9",
-    "wait-on": "^8.0.1"
+    "wait-on": "^8.0.1",
+    "zellij-launcher": "^0.0.1"
   },
   "scripts": {
     "cartesi:build": "cartesi build",
     "cartesi:build:watch": "as-soon -w cartesi/src pnpm cartesi:build",
     "cartesi:run": "wait-on .cartesi/image/hash && cartesi run",
-    "start": "zellij delete-session $npm_package_name; zellij --layout zellij.kdl -s $npm_package_name"
+    "start": "zellij-launcher --layout zellij.kdl a $npm_package_name || zellij --layout zellij.kdl -s $npm_package_name"
   }
 }
