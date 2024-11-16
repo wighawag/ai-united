@@ -321,8 +321,58 @@ impl Battle {
         let mut collider_set = ColliderSet::new();
 
         /* Create the ground. */
-        let collider = ColliderBuilder::cuboid(100.0, 0.1, 100.0).build();
+        let collider = ColliderBuilder::cuboid(20.0, 0.1, 20.0)
+            .translation(vector![0.0, -0.05, 0.0])
+            .build();
         collider_set.insert(collider);
+
+        let collider = ColliderBuilder::cuboid(0.1, 20.0, 20.0)
+            .translation(vector![-10.0 - 0.05, 0.0, 0.0])
+            .build();
+        collider_set.insert(collider);
+
+        let collider = ColliderBuilder::cuboid(20.0, 20.0, 0.1)
+            .translation(vector![0.0, 0.0, 10.0 + 0.05])
+            .build();
+        collider_set.insert(collider);
+
+        let collider = ColliderBuilder::cuboid(0.1, 20.0, 20.0)
+            .translation(vector![10.0 + 0.05, 0.0, 0.0])
+            .build();
+        collider_set.insert(collider);
+
+        let collider = ColliderBuilder::cuboid(20.0, 20.0, 0.1)
+            .translation(vector![0.0, 0.0, -10.0 - 0.05])
+            .build();
+        collider_set.insert(collider);
+
+        let collider = ColliderBuilder::cone(2.5, 0.5)
+            .translation(vector![-9.5, 2.5, 9.5])
+            .build();
+        collider_set.insert(collider);
+
+        let collider = ColliderBuilder::cylinder(2.5, 0.5)
+            .translation(vector![9.5, 2.5, -9.5])
+            .build();
+        collider_set.insert(collider);
+
+        // // Define dome parameters
+        // let dome_radius = 5.0;
+
+        // // Create a half-sphere shape for the dome
+        // let dome_shape = SharedShape::halfspace(Vector::y_axis());
+
+        // // Create a collider descriptor for the dome
+        // let dome_collider = ColliderBuilder::new(dome_shape)
+        //     .position(Isometry3::translation(0.0, dome_radius, 0.0))
+        //     .
+        //     .build();
+
+        // // Add the dome collider to the set
+        // let dome_handle = collider_set.insert(dome_collider);
+
+        // let collider = ColliderBuilder::ball(10.0).build();
+        // collider_set.insert(collider);
 
         /* Create other structures necessary for the simulation. */
         let gravity = vector![0.0, -9.81, 0.0];
@@ -340,7 +390,7 @@ impl Battle {
 
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
-            .translation(vector![0.0, 10.0, 0.0])
+            .translation(vector![0.0, 10.0 - 0.25, 0.0])
             .build();
         let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
         let ball = rigid_body_set.insert(rigid_body);
@@ -367,10 +417,10 @@ impl Battle {
         }
     }
 
-    fn create_bot_handle(&mut self) -> RigidBodyHandle {
+    fn create_bot_handle(&mut self, position: Position) -> RigidBodyHandle {
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
-            .translation(vector![0.0, 10.0, 0.0])
+            .translation(vector![position.x, position.y, position.y])
             .build();
         let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
         let handle = self.rigid_body_set.insert(rigid_body);
@@ -379,7 +429,7 @@ impl Battle {
         handle
     }
 
-    pub fn getBot1(&self) -> Position {
+    pub fn get_bot1(&self) -> Position {
         let bot = self.bot1.as_ref().unwrap();
         let body = &self.rigid_body_set[bot.handle];
         Position {
@@ -389,7 +439,7 @@ impl Battle {
         }
     }
 
-    pub fn getBot2(&self) -> Position {
+    pub fn get_bot2(&self) -> Position {
         let bot = self.bot2.as_ref().unwrap();
         let body = &self.rigid_body_set[bot.handle];
         Position {
@@ -399,7 +449,7 @@ impl Battle {
         }
     }
 
-    pub fn getBall(&self) -> Position {
+    pub fn get_ball(&self) -> Position {
         let body = &self.rigid_body_set[self.ball];
         Position {
             x: body.translation().x,
@@ -413,11 +463,19 @@ impl Battle {
             if let Some(_existing_bot) = &self.bot2 {
                 panic!("already both bots added");
             } else {
-                let handle = self.create_bot_handle();
+                let handle = self.create_bot_handle(Position {
+                    x: 10.0 - 0.25,
+                    y: 0.25,
+                    z: 0.0,
+                });
                 self.bot2 = Some(create_bot_module(wasm_bytes, handle));
             }
         } else {
-            let handle = self.create_bot_handle();
+            let handle = self.create_bot_handle(Position {
+                x: -10.0 + 0.25,
+                y: 0.25,
+                z: 0.0,
+            });
             self.bot1 = Some(create_bot_module(wasm_bytes, handle));
         }
     }
@@ -432,6 +490,9 @@ impl Battle {
         println!("Calling `init` ...");
         bot1.init(0);
         bot2.init(0);
+
+        self.rigid_body_set[bot1.handle].apply_impulse(vector![1.0, 1.0, 0.0], true);
+        self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 1.0, 0.0], true);
     }
 
     pub fn update(&mut self) -> u8 {

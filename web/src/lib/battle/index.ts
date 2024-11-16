@@ -47,17 +47,17 @@ function update() {
 			}
 		}
 
-		const bot1Postion = $battle.battle.getBot1();
+		const bot1Postion = $battle.battle.get_bot1();
 		$battle.bot1.x = bot1Postion.x;
 		$battle.bot1.y = bot1Postion.y;
 		$battle.bot1.z = bot1Postion.z;
 
-		const bot2Postion = $battle.battle.getBot2();
+		const bot2Postion = $battle.battle.get_bot2();
 		$battle.bot2.x = bot2Postion.x;
 		$battle.bot2.y = bot2Postion.y;
 		$battle.bot2.z = bot2Postion.z;
 
-		const ballPostion = $battle.battle.getBall();
+		const ballPostion = $battle.battle.get_ball();
 		$battle.ball.x = ballPostion.x;
 		$battle.ball.y = ballPostion.y;
 		$battle.ball.z = ballPostion.z;
@@ -67,7 +67,11 @@ function update() {
 	}
 }
 
+let last_wasm_bytes_1: Uint8Array | undefined;
+let last_wasm_bytes_2: Uint8Array | undefined;
 export function play(wasm_bytes_1: Uint8Array, wasm_bytes_2: Uint8Array) {
+	last_wasm_bytes_1 = wasm_bytes_1;
+	last_wasm_bytes_2 = wasm_bytes_2;
 	const battle = new Battle();
 	$battle.battle = battle;
 
@@ -76,4 +80,14 @@ export function play(wasm_bytes_1: Uint8Array, wasm_bytes_2: Uint8Array) {
 	battle.init();
 
 	update();
+}
+
+export function replay() {
+	if (currentPendingAnimationFrame) {
+		cancelAnimationFrame(currentPendingAnimationFrame);
+		currentPendingAnimationFrame = 0;
+	}
+	if (last_wasm_bytes_1 && last_wasm_bytes_2) {
+		play(last_wasm_bytes_1, last_wasm_bytes_2);
+	}
 }

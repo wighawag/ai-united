@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { Gizmo, OrbitControls } from '@threlte/extras';
+	import { Gizmo, Grid, OrbitControls } from '@threlte/extras';
 
-	import { BoxGeometry, Color, MeshStandardMaterial, SphereGeometry } from 'three';
+	import {
+		BoxGeometry,
+		Color,
+		CylinderGeometry,
+		Mesh,
+		MeshStandardMaterial,
+		SphereGeometry
+	} from 'three';
 
 	import { battle } from '$lib/battle';
 
@@ -14,6 +21,9 @@
 	export let minPolarAngle: number;
 	export let maxPolarAngle: number;
 	export let enableZoom: boolean;
+
+	const gridSize = 20.0;
+	const gridColor = Color.NAMES.white;
 </script>
 
 <T.PerspectiveCamera makeDefault position={[10, 5, 10]} lookAt.y={0.5}>
@@ -34,7 +44,85 @@
 <T.DirectionalLight position.y={10} position.z={10} />
 <T.AmbientLight intensity={0.3} />
 
-<T.GridHelper args={[10, 10]} />
+<!-- <T.GridHelper args={[20, 20]} plane={'xy'} /> -->
+
+<Grid
+	plane="xz"
+	gridSize={[gridSize, gridSize]}
+	backgroundColor={gridColor}
+	backgroundOpacity={0.0}
+	type={'grid'}
+/>
+
+<Grid
+	plane="xy"
+	gridSize={[gridSize, gridSize]}
+	backgroundColor={gridColor}
+	backgroundOpacity={0.0}
+	type={'grid'}
+	position={[0.0, gridSize / 2, -gridSize / 2]}
+/>
+
+<Grid
+	plane="xy"
+	gridSize={[gridSize, gridSize]}
+	backgroundColor={gridColor}
+	backgroundOpacity={0.0}
+	type={'grid'}
+	position={[0.0, gridSize / 2, gridSize / 2]}
+/>
+
+<Grid
+	plane="zy"
+	gridSize={[gridSize, gridSize]}
+	backgroundColor={gridColor}
+	backgroundOpacity={0.0}
+	type={'grid'}
+	position={[-gridSize / 2, gridSize / 2, 0.0]}
+/>
+
+<Grid
+	plane="zy"
+	gridSize={[gridSize, gridSize]}
+	backgroundColor={gridColor}
+	backgroundOpacity={0.0}
+	type={'grid'}
+	position={[gridSize / 2, gridSize / 2, 0.0]}
+/>
+
+<!-- 
+<T.Mesh position.y={-0.01} rotation.x={-Math.PI / 2}>
+	<T.CircleGeometry args={[10, 64]} />
+	<T.ShaderMaterial
+		uniforms={{
+			uSize: { value: 10.0 },
+			uLineWidth: { value: 0.1 },
+			uLineColor: { value: new Color(0x888888) },
+			uGridColor: { value: new Color(0xcccccc) }
+		}}
+		vertexShader={`
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `}
+		fragmentShader={`
+        uniform float uSize;
+        uniform float uLineWidth;
+        uniform vec3 uLineColor;
+        uniform vec3 uGridColor;
+        varying vec2 vUv;
+        void main() {
+          vec2 coord = vUv * uSize;
+          vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+          float line = min(grid.x, grid.y);
+          float color = 1.0 - min(line, 1.0);
+          gl_FragColor = vec4(mix(uGridColor, uLineColor, color), 1.0);
+        }
+      `}
+	/>
+</T.Mesh> -->
 
 <!-- bot 1 -->
 <T.Mesh
@@ -66,5 +154,25 @@
 	geometry={new SphereGeometry(0.5)}
 	material={new MeshStandardMaterial({
 		color: Color.NAMES.white
+	})}
+/>
+
+<T.Mesh
+	position.y={2.5}
+	position.x={-9.5}
+	position.z={9.5}
+	geometry={new CylinderGeometry(0, 0.5, 5)}
+	material={new MeshStandardMaterial({
+		color: Color.NAMES.blueviolet
+	})}
+/>
+
+<T.Mesh
+	position.y={2.5}
+	position.x={9.5}
+	position.z={-9.5}
+	geometry={new CylinderGeometry(0, 0.5, 5)}
+	material={new MeshStandardMaterial({
+		color: Color.NAMES.firebrick
 	})}
 />
