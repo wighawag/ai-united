@@ -204,7 +204,7 @@
 	position.y={2.5}
 	position.x={-10.4}
 	position.z={0}
-	geometry={new BoxGeometry(1.0, 5.0, 5.0)}
+	geometry={new BoxGeometry(1.3, 5.0, 5.0)}
 	material={new MeshStandardMaterial({
 		color: Color.NAMES.blueviolet
 	})}
@@ -214,7 +214,7 @@
 	position.y={2.5}
 	position.x={10.4}
 	position.z={0}
-	geometry={new BoxGeometry(1.0, 5.0, 5.0)}
+	geometry={new BoxGeometry(1.3, 5.0, 5.0)}
 	material={new MeshStandardMaterial({
 		color: Color.NAMES.firebrick
 	})}

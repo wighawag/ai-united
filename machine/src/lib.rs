@@ -448,36 +448,36 @@ impl Battle {
         let mut collider_set = ColliderSet::new();
 
         /* Create the ground. */
-        let collider = ColliderBuilder::cuboid(20.0, 0.1, 20.0)
-            .translation(vector![0.0, -0.05, 0.0])
+        let collider = ColliderBuilder::cuboid(20.0, 1.0, 20.0)
+            .translation(vector![0.0, -0.9, 0.0])
             .build();
         collider_set.insert(collider);
 
         // and the roof
-        let collider = ColliderBuilder::cuboid(20.0, 0.1, 20.0)
-            .translation(vector![0.0, 20.0, 0.0])
+        let collider = ColliderBuilder::cuboid(20.0, 1.0, 20.0)
+            .translation(vector![0.0, 20.9, 0.0])
             .build();
         collider_set.insert(collider);
 
         // and the walls
 
-        let collider = ColliderBuilder::cuboid(0.1, 20.0, 20.0)
-            .translation(vector![-10.0 - 0.05, 0.0, 0.0])
+        let collider = ColliderBuilder::cuboid(1.0, 20.0, 20.0)
+            .translation(vector![-10.9, 0.0, 0.0])
             .build();
         collider_set.insert(collider);
 
-        let collider = ColliderBuilder::cuboid(20.0, 20.0, 0.1)
-            .translation(vector![0.0, 0.0, 10.0 + 0.05])
+        let collider = ColliderBuilder::cuboid(20.0, 20.0, 1.0)
+            .translation(vector![0.0, 0.0, 10.9])
             .build();
         collider_set.insert(collider);
 
-        let collider = ColliderBuilder::cuboid(0.1, 20.0, 20.0)
-            .translation(vector![10.0 + 0.05, 0.0, 0.0])
+        let collider = ColliderBuilder::cuboid(1.0, 20.0, 20.0)
+            .translation(vector![10.9, 0.0, 0.0])
             .build();
         collider_set.insert(collider);
 
-        let collider = ColliderBuilder::cuboid(20.0, 20.0, 0.1)
-            .translation(vector![0.0, 0.0, -10.0 - 0.05])
+        let collider = ColliderBuilder::cuboid(20.0, 20.0, 1.0)
+            .translation(vector![0.0, 0.0, -10.9])
             .build();
         collider_set.insert(collider);
 
@@ -491,13 +491,13 @@ impl Battle {
         //     .build();
         // collider_set.insert(collider);
 
-        let collider_for_bot1_goal = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
+        let collider_for_bot1_goal = ColliderBuilder::cuboid(0.5, 2.5, 2.5)
             .translation(vector![-10.4, 0.0, 0.0])
             .user_data(ObjectType::Bot1Goal as u128)
             .build();
         collider_set.insert(collider_for_bot1_goal);
 
-        let collider_for_bot2_goal = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
+        let collider_for_bot2_goal = ColliderBuilder::cuboid(0.5, 2.5, 2.5)
             .translation(vector![10.4, 0.0, 0.0])
             .user_data(ObjectType::Bot2Goal as u128)
             .build();
@@ -537,7 +537,7 @@ impl Battle {
 
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
-            .translation(vector![0.0, 10.0 - 0.25, 0.0])
+            .translation(vector![0.0, 10.5, 0.0])
             .build();
         let collider = ColliderBuilder::ball(0.5)
             .active_events(ActiveEvents::COLLISION_EVENTS)
@@ -625,7 +625,7 @@ impl Battle {
                 let handle = self.create_bot_handle(
                     Position {
                         x: 9.0,
-                        y: 0.25,
+                        y: 0.5,
                         z: 0.0,
                     },
                     ObjectType::Bot2,
@@ -636,7 +636,7 @@ impl Battle {
             let handle = self.create_bot_handle(
                 Position {
                     x: -9.0,
-                    y: 0.25,
+                    y: 0.5,
                     z: 0.0,
                 },
                 ObjectType::Bot1,
