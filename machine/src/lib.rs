@@ -6,6 +6,7 @@ use std::sync::RwLock;
 use nalgebra::ArrayStorage;
 use nalgebra::Const;
 use nalgebra::Matrix;
+use nalgebra::Vector3;
 use rapier3d::crossbeam;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -68,7 +69,25 @@ pub fn start() -> Result<(), JsValue> {
     Ok(())
 }
 
+// Function to reconstruct vector from u32
+fn reconstruct_action(action: u32) -> [f32; 3] {
+    // First, reconstruct [u8; 3] from u32
+    let action_u8 = [
+        ((action >> 16) & 0xFF) as u8,
+        ((action >> 8) & 0xFF) as u8,
+        (action & 0xFF) as u8,
+    ];
+
+    // Then, convert [u8; 3] back to [f32; 3]
+    [
+        (action_u8[0] as f32 - 128.0) / 127.0,
+        (action_u8[1] as f32 - 128.0) / 127.0,
+        (action_u8[2] as f32 - 128.0) / 127.0,
+    ]
+}
+
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -80,7 +99,7 @@ struct BotModule {
     instance: Instance,
     store: Store,
     init: TypedFunction<u32, ()>,
-    compute_actions: TypedFunction<(u32, u32, u32, u32, u32, u32), u32>,
+    compute_actions: TypedFunction<(f32, f32, f32, f32, f32, f32, f32, f32, f32), u32>,
     handle: RigidBodyHandle,
 }
 
@@ -165,12 +184,13 @@ fn create_bot_module(wasm_bytes: &mut [u8], handle: RigidBodyHandle) -> BotModul
         .typed(&mut store)
         .expect("failed to get typed version of the function 'init'");
 
-    let compute_actions: TypedFunction<(u32, u32, u32, u32, u32, u32), u32> = instance
-        .exports
-        .get_function("compute_actions")
-        .expect("failed to get function 'compute_actions'")
-        .typed(&mut store)
-        .expect("failed to get typed version of the function 'compute_actions'");
+    let compute_actions: TypedFunction<(f32, f32, f32, f32, f32, f32, f32, f32, f32), u32> =
+        instance
+            .exports
+            .get_function("compute_actions")
+            .expect("failed to get function 'compute_actions'")
+            .typed(&mut store)
+            .expect("failed to get typed version of the function 'compute_actions'");
 
     BotModule {
         instance,
@@ -241,23 +261,29 @@ impl BotModule {
 
     fn compute_actions(
         &mut self,
-        self_x: u32,
-        self_y: u32,
-        ball_x: u32,
-        ball_y: u32,
-        enemy_x: u32,
-        enemy_y: u32,
-    ) -> () {
+        self_x: f32,
+        self_y: f32,
+        self_z: f32,
+        ball_x: f32,
+        ball_y: f32,
+        ball_z: f32,
+        enemy_x: f32,
+        enemy_y: f32,
+        enemy_z: f32,
+    ) -> u32 {
         match self.compute_actions.call(
             &mut self.store,
             self_x,
             self_y,
+            self_z,
             ball_x,
             ball_y,
+            ball_z,
             enemy_x,
             enemy_y,
+            enemy_z,
         ) {
-            Ok(_) => {
+            Ok(res) => {
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     let remaining_points_after_call =
@@ -267,6 +293,7 @@ impl BotModule {
                     //     remaining_points_after_call
                     // );
                 }
+                res
             }
             Err(err) => {
                 println!("Calling `update` failed.");
@@ -287,6 +314,7 @@ impl BotModule {
                 {
                     on_runtime_error(err);
                 }
+                8421504
             }
         }
     }
@@ -616,6 +644,10 @@ impl Battle {
     }
 
     pub fn update(&mut self) -> u8 {
+        let ball_pos = self.get_ball().clone();
+        let bot1_pos = self.get_bot1().clone();
+        let bot2_pos = self.get_bot2().clone();
+
         // // Initialize the event collector.
         // let (collision_send, collision_recv) = crossbeam::channel::unbounded();
         // let (contact_force_send, contact_force_recv) = crossbeam::channel::unbounded();
@@ -629,8 +661,19 @@ impl Battle {
 
         // println!("Calling `compute_actions` ...");
         // TODO
-        bot1.compute_actions(0, 0, 0, 0, 0, 0);
-        bot2.compute_actions(0, 0, 0, 0, 0, 0);
+
+        let bot1_vector = Vector3::from(reconstruct_action(bot1.compute_actions(
+            bot1_pos.x, bot1_pos.y, bot1_pos.z, ball_pos.x, ball_pos.y, ball_pos.z, bot2_pos.x,
+            bot2_pos.y, bot2_pos.z,
+        )));
+        let bot2_vector = Vector3::from(reconstruct_action(bot2.compute_actions(
+            bot2_pos.x, bot2_pos.y, bot2_pos.z, ball_pos.x, ball_pos.y, ball_pos.z, bot1_pos.x,
+            bot1_pos.y, bot1_pos.z,
+        )));
+
+        self.rigid_body_set[bot1.handle].apply_impulse(bot1_vector, true);
+        // self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 1.0, 0.0], true);
+        self.rigid_body_set[bot2.handle].apply_impulse(bot2_vector, true);
 
         let event_handler = CustomEventHandler {
             winner: RwLock::new(0),
