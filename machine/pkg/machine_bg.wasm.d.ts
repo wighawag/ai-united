@@ -1,0 +1,30 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export function start(): void;
+export function __wbg_position_free(a: number, b: number): void;
+export function __wbg_get_position_x(a: number): number;
+export function __wbg_set_position_x(a: number, b: number): void;
+export function __wbg_get_position_y(a: number): number;
+export function __wbg_set_position_y(a: number, b: number): void;
+export function __wbg_get_position_z(a: number): number;
+export function __wbg_set_position_z(a: number, b: number): void;
+export function __wbg_battle_free(a: number, b: number): void;
+export function battle_new(): number;
+export function battle_get_bot1(a: number): number;
+export function battle_get_bot2(a: number): number;
+export function battle_get_ball(a: number): number;
+export function battle_add_bot(a: number, b: number, c: number, d: number): void;
+export function battle_init(a: number): void;
+export function battle_update(a: number): number;
+export function battle_execute(a: number): number;
+export function __wbg_trap_free(a: number, b: number): void;
+export function trap___wbg_wasmer_trap(): void;
+export function __wbindgen_malloc(a: number, b: number): number;
+export function __wbindgen_realloc(a: number, b: number, c: number, d: number): number;
+export const __wbindgen_export_2: WebAssembly.Table;
+export const __wbindgen_export_3: WebAssembly.Table;
+export function __wbindgen_free(a: number, b: number, c: number): void;
+export function __wbindgen_exn_store(a: number): void;
+export function __externref_table_alloc(): number;
+export function __wbindgen_start(): void;
