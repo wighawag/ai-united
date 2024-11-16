@@ -23,7 +23,9 @@
 	export let enableZoom: boolean;
 
 	const gridSize = 20.0;
-	const gridColor = Color.NAMES.white;
+	const gridColor = Color.NAMES.gray;
+	const gridSectionColor = Color.NAMES.gray;
+	const gridSectionThickness = undefined;
 </script>
 
 <T.PerspectiveCamera makeDefault position={[10, 5, 10]} lookAt.y={0.5}>
@@ -49,7 +51,9 @@
 <Grid
 	plane="xz"
 	gridSize={[gridSize, gridSize]}
-	backgroundColor={gridColor}
+	cellColor={gridColor}
+	sectionColor={gridSectionColor}
+	sectionThickness={gridSectionThickness}
 	backgroundOpacity={0.0}
 	type={'grid'}
 />
@@ -57,7 +61,9 @@
 <Grid
 	plane="xy"
 	gridSize={[gridSize, gridSize]}
-	backgroundColor={gridColor}
+	cellColor={gridColor}
+	sectionColor={gridSectionColor}
+	sectionThickness={gridSectionThickness}
 	backgroundOpacity={0.0}
 	type={'grid'}
 	position={[0.0, gridSize / 2, -gridSize / 2]}
@@ -66,7 +72,9 @@
 <Grid
 	plane="xy"
 	gridSize={[gridSize, gridSize]}
-	backgroundColor={gridColor}
+	cellColor={gridColor}
+	sectionColor={gridSectionColor}
+	sectionThickness={gridSectionThickness}
 	backgroundOpacity={0.0}
 	type={'grid'}
 	position={[0.0, gridSize / 2, gridSize / 2]}
@@ -75,7 +83,9 @@
 <Grid
 	plane="zy"
 	gridSize={[gridSize, gridSize]}
-	backgroundColor={gridColor}
+	cellColor={gridColor}
+	sectionColor={gridSectionColor}
+	sectionThickness={gridSectionThickness}
 	backgroundOpacity={0.0}
 	type={'grid'}
 	position={[-gridSize / 2, gridSize / 2, 0.0]}
@@ -84,7 +94,9 @@
 <Grid
 	plane="zy"
 	gridSize={[gridSize, gridSize]}
-	backgroundColor={gridColor}
+	cellColor={gridColor}
+	sectionColor={gridSectionColor}
+	sectionThickness={gridSectionThickness}
 	backgroundOpacity={0.0}
 	type={'grid'}
 	position={[gridSize / 2, gridSize / 2, 0.0]}
@@ -157,7 +169,7 @@
 	})}
 />
 
-<T.Mesh
+<!-- <T.Mesh
 	position.y={2.5}
 	position.x={-9.5}
 	position.z={9.5}
@@ -172,6 +184,26 @@
 	position.x={9.5}
 	position.z={-9.5}
 	geometry={new CylinderGeometry(0, 0.5, 5)}
+	material={new MeshStandardMaterial({
+		color: Color.NAMES.firebrick
+	})}
+/> -->
+
+<T.Mesh
+	position.y={2.5}
+	position.x={-10.4}
+	position.z={0}
+	geometry={new BoxGeometry(1.0, 5.0, 5.0)}
+	material={new MeshStandardMaterial({
+		color: Color.NAMES.blueviolet
+	})}
+/>
+
+<T.Mesh
+	position.y={2.5}
+	position.x={10.4}
+	position.z={0}
+	geometry={new BoxGeometry(1.0, 5.0, 5.0)}
 	material={new MeshStandardMaterial({
 		color: Color.NAMES.firebrick
 	})}

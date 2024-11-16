@@ -346,13 +346,23 @@ impl Battle {
             .build();
         collider_set.insert(collider);
 
-        let collider = ColliderBuilder::cone(2.5, 0.5)
-            .translation(vector![-9.5, 2.5, 9.5])
+        // let collider = ColliderBuilder::cone(2.5, 0.5)
+        //     .translation(vector![-9.5, 2.5, 9.5])
+        //     .build();
+        // collider_set.insert(collider);
+
+        // let collider = ColliderBuilder::cone(2.5, 0.5)
+        //     .translation(vector![9.5, 2.5, -9.5])
+        //     .build();
+        // collider_set.insert(collider);
+
+        let collider = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
+            .translation(vector![-10.4, 0.0, 0.0])
             .build();
         collider_set.insert(collider);
 
-        let collider = ColliderBuilder::cylinder(2.5, 0.5)
-            .translation(vector![9.5, 2.5, -9.5])
+        let collider = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
+            .translation(vector![10.4, 0.0, 0.0])
             .build();
         collider_set.insert(collider);
 
