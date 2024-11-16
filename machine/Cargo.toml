@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# TODO but for now rapier3d do not compile with "enhanced-determinism" // rapier3d = { version = "0.22.0", features = [ "enhanced-determinism" ] }
+# TODO but for now rapier3d do not compile with "enhanced-determinism"
+#rapier3d = { version = "0.22.0", features = [ "enhanced-determinism" ] }
 rapier3d = { version = "0.22.0" }
+#rapier3d = { git = "https://github.com/dimforge/rapier.git", rev = "9e1113c5c7e3c3a042bc5979c158e752acfeb46a", features = [ "enhanced-determinism" ] }
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 wasmer = { version = "5.0.0", default-features=false, features=["js-default"]}
@@ -29,3 +31,11 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = ["console_error_panic_hook"]
+
+#[replace]
+#"rapier3d:0.22.0" = { git = "https://github.com/dimforge/rapier.git", branch = "master" }
+#"parry3d:0.17.2" = { git = "https://github.com/dimforge/parry.git", branch = "master" }
+
+#[patch.crates-io]
+#rapier3d = { git = "https://github.com/dimforge/rapier.git", branch = "master" }
+#parry3d = { git = "https://github.com/wighawag/parry.git", branch = "wighawag-patch-1" }

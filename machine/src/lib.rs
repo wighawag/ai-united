@@ -452,7 +452,7 @@ impl Battle {
         collider_set.insert(collider_for_bot1_goal);
 
         let collider_for_bot2_goal = ColliderBuilder::cuboid(1.0, 5.0, 5.0)
-            .translation(vector![8.4, 0.0, 0.0])
+            .translation(vector![10.4, 0.0, 0.0])
             .user_data(ObjectType::Bot2Goal as u128)
             .build();
         collider_set.insert(collider_for_bot2_goal);
@@ -610,9 +610,9 @@ impl Battle {
         bot1.init(0);
         bot2.init(0);
 
-        self.rigid_body_set[bot1.handle].apply_impulse(vector![1.0, 0.0, 0.0], true);
+        self.rigid_body_set[bot1.handle].apply_impulse(vector![2.0, 0.0, 0.0], true);
         // self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 1.0, 0.0], true);
-        self.rigid_body_set[bot2.handle].apply_impulse(vector![-1.0, 0.0, 1.0], true);
+        self.rigid_body_set[bot2.handle].apply_impulse(vector![-2.0, 0.0, 1.0], true);
     }
 
     pub fn update(&mut self) -> u8 {
