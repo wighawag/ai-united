@@ -327,14 +327,14 @@ impl Battle {
         /* Create other structures necessary for the simulation. */
         let gravity = vector![0.0, -9.81, 0.0];
         let integration_parameters = IntegrationParameters::default();
-        let mut physics_pipeline = PhysicsPipeline::new();
-        let mut island_manager = IslandManager::new();
-        let mut broad_phase = DefaultBroadPhase::new();
-        let mut narrow_phase = NarrowPhase::new();
-        let mut impulse_joint_set = ImpulseJointSet::new();
-        let mut multibody_joint_set = MultibodyJointSet::new();
-        let mut ccd_solver = CCDSolver::new();
-        let mut query_pipeline = QueryPipeline::new();
+        let physics_pipeline = PhysicsPipeline::new();
+        let island_manager = IslandManager::new();
+        let broad_phase = DefaultBroadPhase::new();
+        let narrow_phase = NarrowPhase::new();
+        let impulse_joint_set = ImpulseJointSet::new();
+        let multibody_joint_set = MultibodyJointSet::new();
+        let ccd_solver = CCDSolver::new();
+        let query_pipeline = QueryPipeline::new();
         let physics_hooks = ();
         let event_handler = ();
 

@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 
 const MAX_NUM_UPDATES = 1_000_000; // TODO share with machine
 
-export type Position = { x: number; y: number };
+export type Position = { x: number; y: number; z: number };
 
 export type BattleState = {
 	step: number;
@@ -15,9 +15,9 @@ export type BattleState = {
 };
 const $battle: BattleState = {
 	step: 0,
-	bot1: { x: 0, y: 0 },
-	bot2: { x: 0, y: 0 },
-	ball: { x: 0, y: 0 },
+	bot1: { x: 0, y: 0, z: 0 },
+	bot2: { x: 0, y: 0, z: 0 },
+	ball: { x: 0, y: 0, z: 0 },
 	initialized: false
 };
 const _battle = writable($battle);
@@ -50,14 +50,17 @@ function update() {
 		const bot1Postion = $battle.battle.getBot1();
 		$battle.bot1.x = bot1Postion.x;
 		$battle.bot1.y = bot1Postion.y;
+		$battle.bot1.z = bot1Postion.z;
 
 		const bot2Postion = $battle.battle.getBot2();
 		$battle.bot2.x = bot2Postion.x;
 		$battle.bot2.y = bot2Postion.y;
+		$battle.bot2.z = bot2Postion.z;
 
 		const ballPostion = $battle.battle.getBall();
 		$battle.ball.x = ballPostion.x;
 		$battle.ball.y = ballPostion.y;
+		$battle.ball.z = ballPostion.z;
 
 		updateState();
 		currentPendingAnimationFrame = requestAnimationFrame(update);
