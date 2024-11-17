@@ -1,5 +1,17 @@
 # botpit
 
+## quick try
+
+download a wasm bot at https://ai-united.vercel.app/bot_rust.wasm
+
+remember where you store it
+
+go to https://ai-united.vercel.app/
+
+for both bot select the file you just downloaded (there is only one bot implementation for now)
+
+then press play and see the match!
+
 ## dependencies
 
 Required:
